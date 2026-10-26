@@ -1,0 +1,11 @@
+.venv*/
+models/
+vendor/
+handoff/
+data/
+samples/
+wheelhouse/
+work/
+results/
+__pycache__/
+*.part
