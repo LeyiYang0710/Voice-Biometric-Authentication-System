@@ -185,22 +185,75 @@ class SpeakerIdentifier:
         }
 
 
+def _identify_default(model_type, wav_path, recording_id=None):
+    """Use the checked-in model, templates and development threshold together."""
+    if "session03" in {part.lower() for part in wav_path.resolve().parts}:
+        raise ValueError("Team session03 remains reserved for final evaluation")
+    if model_type == "tdnn":
+        from ml.tdnn.identify_frozen import FrozenTDNN, InvalidAudio as TDNNInvalidAudio
+
+        release_path = ROOT / "ml/tdnn/frozen_libri251_fp32.json"
+        release = json.loads(release_path.read_text(encoding="utf-8"))
+        try:
+            return FrozenTDNN(release["conditions_id"]).identify(wav_path, recording_id)
+        except TDNNInvalidAudio as error:
+            # The imported backend can load identify under a separate module name.
+            raise InvalidAudio(str(error)) from error
+
+    config_path = ROOT / "ml/campplus/frozen_threshold.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    if (
+        config.get("schema_version") != 1
+        or config.get("status") != "frozen_development_threshold"
+        or config.get("model_type") != "campplus"
+        or config.get("accept_rule") != "best_score >= threshold"
+    ):
+        raise ValueError("Expected the frozen CAM++ development configuration")
+    threshold = config["threshold"]
+    if type(threshold) not in (int, float) or not np.isfinite(threshold) or not -1 <= threshold <= 1:
+        raise ValueError("Frozen threshold must be finite and between -1 and 1")
+    database_path = config_path.parent / config["template_path"]
+    binding = config["binding"]
+    if checksum(database_path) != binding["template_db_sha256"]:
+        raise ValueError("Frozen CAM++ template database changed")
+    database = json.loads(database_path.read_text(encoding="utf-8"))
+    if (
+        database["model_sha256"] != binding["model_sha256"]
+        or database["strategy"] != binding["strategy"]
+        or list(database["members"]) != binding["members"]
+    ):
+        raise ValueError("Model, templates or window strategy differ from the CAM++ calibration")
+    identifier = SpeakerIdentifier("campplus", database_path, threshold=threshold)
+    result = identifier.identify(wav_path, recording_id)
+    result.update(
+        conditions_id=binding["conditions_id"], scope=config["scope"],
+        deployment_approved=config["deployment_approved"], calibration_sha256=checksum(config_path),
+    )
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--wav", type=Path, required=True)
     parser.add_argument("--model", choices=["campplus", "tdnn"], required=True)
-    parser.add_argument("--db", type=Path, required=True)
+    parser.add_argument("--db", type=Path,
+                        help="Optional explicit database; omit to use the model's fixed profile")
     parser.add_argument("--model-path", "--checkpoint", dest="model_path", type=Path,
                         help="Override the database model path; its hash must still match")
     parser.add_argument("--threshold", type=float,
-                        help="Optional calibrated cosine threshold; omit for ranking only")
+                        help="Explicit --db only; omit for ranking-only use of that database")
     parser.add_argument("--recording-id")
     args = parser.parse_args()
+    if args.db is None and (args.model_path is not None or args.threshold is not None):
+        parser.error("--model-path/--threshold overrides require an explicit --db")
     try:
-        identifier = SpeakerIdentifier(args.model, args.db, args.model_path, args.threshold)
-        result = identifier.identify(args.wav, args.recording_id)
+        if args.db is None:
+            result = _identify_default(args.model, args.wav, args.recording_id)
+        else:
+            identifier = SpeakerIdentifier(args.model, args.db, args.model_path, args.threshold)
+            result = identifier.identify(args.wav, args.recording_id)
         code = 0
-    except (InvalidAudio, OSError, ValueError, RuntimeError, ImportError) as error:
+    except (InvalidAudio, OSError, ValueError, KeyError, TypeError, RuntimeError, ImportError) as error:
         result = {
             "recording_id": args.recording_id or args.wav.stem,
             "status": "invalid" if isinstance(error, InvalidAudio) else "error",
