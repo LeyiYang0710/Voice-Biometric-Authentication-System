@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "status": "frozen_development_threshold",
+  "model_type": "campplus",
+  "template_path": "templates/campplus_multiwindow.json",
+  "binding": {
+    "model_sha256": "aa3cfc16963a10586a9393f5035d6d6b57e98d358b347f80c2a30bf4f00ceba2",
+    "template_db_sha256": "857cc4e7b29bdd62790135500c033cddbf24e32805560302e1060810bf708fe7",
+    "strategy": "multiwindow",
+    "members": [
+      "member02",
+      "member03",
+      "member04",
+      "member05"
+    ],
+    "conditions_id": "desktop_members_plus_public_librispeech_train_v1"
+  },
+  "threshold": 0.7719998955726624,
+  "accept_rule": "best_score >= threshold",
+  "scope": "public_audio_desktop_development_only",
+  "deployment_approved": false,
+  "development_metrics": {
+    "member_queries": 30,
+    "member_correct": 30,
+    "member_wrong_identity": 0,
+    "member_rejected": 0,
+    "stranger_queries": 20,
+    "stranger_rejected": 20,
+    "stranger_false_accepts": 0,
+    "distinct_strangers": 10
+  },
+  "missing_member": "member01",
+  "missing_member_development_queries": [
+    "member01",
+    "member04"
+  ],
+  "limitations": [
+    "Only four enrolled members; member01 is missing and member04 has no development queries.",
+    "Strangers are LibriSpeech audiobook speakers, not recordings from the intended microphone.",
+    "Pretraining speaker overlap is unverified.",
+    "Selected and reported on the same development data; independent held-out and ARM evaluation pending."
+  ],
+  "provenance": {
+    "source_template": "mvp_completion_2026-10-31/campplus/templates/rebuilt_four_member.json",
+    "source_template_sha256": "c695bc40064c2b019c3f25dab2a7a24ca95fc274ba047e4d5446d028bc31dfd9",
+    "source_threshold": "mvp_completion_2026-10-31/results/desktop_public_development_threshold.json",
+    "source_threshold_sha256": "79c67351b71b1524ad9626b286e42f32abe25f963c3931aa3b31ca29637c0d6a",
+    "template_change": "Keep inference fields; omit enrolment provenance containing machine-specific paths",
+    "template_vectors_changed": false,
+    "threshold_changed": false,
+    "new_training": false
+  }
+}

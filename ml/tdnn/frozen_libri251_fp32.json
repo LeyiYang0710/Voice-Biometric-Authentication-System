@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "release_id": "libri251-m03-fp32-gitlab-software-v1-2026-10-31",
+  "status": "frozen_development_threshold",
+  "inference_branch": "fp32",
+  "model_sha256": "9dfadadd79cd5e8418acab38efcdd735aa615423dab55f7c47e3e575aadde2a2",
+  "checkpoint_path": "checkpoints/libri251_m03_20h/best.pt",
+  "template_path": "templates/libri251_fp32_multiwindow.json",
+  "template_db_sha256": "92c588ae95322a4053f9c4fe4c3f971e02bfc2d61dfe82f4b7a68cbf3e1936e8",
+  "strategy": "multiwindow",
+  "members": [
+    "member02",
+    "member03",
+    "member04",
+    "member05"
+  ],
+  "threshold": 0.5757178068161011,
+  "accept_rule": "best_score >= threshold",
+  "conditions_id": "desktop_members_plus_voxpopuli_public_fp32_v1",
+  "scope": "public_mixed_domain_development_only",
+  "deployment_approved": false,
+  "team_session03_used": false,
+  "missing_member": "member01",
+  "missing_member_development_queries": [
+    "member01",
+    "member04"
+  ],
+  "source_code_sha256_lf": {
+    "identify.py": "bdfb0cfeaef18ee62cd2fcc52c64cbb270ecd84849771a5eaf55dc38246c886a",
+    "small_model.py": "fdc4c82c514522eb0bc60c3f25d7f9825537dfc8246dcb227623412d222763a1"
+  },
+  "training": {
+    "training_corpus": "LibriSpeech, 251 speakers, about 19.97 hours; no augmentation",
+    "selected_epoch": 217,
+    "selected_updates": 75908,
+    "total_training_updates": 76000,
+    "training_margin": 0.3,
+    "training_logit_scale": 16,
+    "training_batch": 16,
+    "learning_rate": 0.001,
+    "weight_decay": 0
+  },
+  "development_metrics": {
+    "member_queries": 30,
+    "member_correct": 30,
+    "member_wrong_identity": 0,
+    "member_rejected": 0,
+    "stranger_queries": 40,
+    "stranger_rejected": 37,
+    "stranger_false_accepts": 3,
+    "distinct_strangers": 20
+  },
+  "speaker_disjoint_public_probe": {
+    "stranger_queries": 20,
+    "stranger_rejected": 18,
+    "stranger_false_accepts": 2,
+    "distinct_strangers": 10
+  },
+  "provenance": {
+    "gitlab_base_commit": "3dcf0f0ade9236ffe563aa4ad410cf02bf2cc61d",
+    "source_package": "tdnn_frozen_delivery_2026-10-31",
+    "source_checkpoint_path": "hardware/conv1d/reference_checkpoint.pt",
+    "source_checkpoint_sha256": "9dfadadd79cd5e8418acab38efcdd735aa615423dab55f7c47e3e575aadde2a2",
+    "source_template_path": "templates/fp32.json",
+    "source_template_sha256": "cbab0595416db8cedfa2b29fdb3b3d87d0e7bd8e118a6df6536dfdbf316e7247",
+    "source_calibration_path": "config/fp32_threshold.json",
+    "source_calibration_sha256": "57679e569a4c54c2ed1a68adeaaf00ca561e9f3ced62da84173759cd106b251a",
+    "packaging_changes": [
+      "Use the existing GitLab FP32 SpeakerIdentifier implementation",
+      "Rebind the checkpoint and template to the existing ignored artifact directories",
+      "Fingerprint source code after CRLF-to-LF normalization",
+      "Bind release JSON by its canonical content hash"
+    ],
+    "weights_changed": false,
+    "template_vectors_changed": false,
+    "threshold_changed": false,
+    "new_training": false
+  }
+}
